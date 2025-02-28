@@ -45,6 +45,8 @@ services:
       - mysql-data:/var/lib/mysql:rw
     networks:
       - beyond-blood
+    cap_add:
+      - SYS_NICE
 
 networks:
   beyond-blood:
