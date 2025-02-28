@@ -1,0 +1,91 @@
+# Default config
+service:
+  name: api-beyond-blood
+  brand: Beyond Blood
+  description: Beyond Blood API
+  baseUrl: /api/beyond-blood
+  docsBaseUrl: /docs/beyond-blood
+  apiVersion: 0.1.0
+  clientAuthUrl: http://localhost:5137
+
+server:
+  host: 127.0.0.1
+  port: 3200
+  hostname: 127.0.0.1:3200
+  swaggerSchema: http
+  swaggerUsername: swaggerUser
+  swaggerPassword: swaggerPassword
+  timezone: UTC
+  cors:
+    allowedHeaders: "authorization,content-type,access-token"
+    exposedHeaders: "authorization,x-page,x-per-page,x-pages-count,x-total-count,x-next-page,x-response-time,x-request-id,x-last-page,x-offset,content-disposition,location"
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE"
+    credentials: true
+    origin: "*"
+
+logger:
+  enabled: true
+  redact:
+    enabled: true
+    paths: 
+      - password
+      - accessToken
+      - refreshToken
+      - authorization
+  level: debug
+  autoLogging: false # to disable the automatic "request completed" and "request errored" logging
+  groupName: beyond-blood
+  logStreamName: beyond-blood-stream
+  clwEnabled: false
+  fileEnabled: false
+  consoleEnabled: true
+  folderLog: logs
+
+auth:
+  salt: 10
+  jwt:
+    secretKey: secret
+    expireTime: 1d # 1 day
+  refreshToken:
+    secretKey: secret
+    expireTime: 7d # 7 days
+  forgotPasswordToken:
+    expireTime: 300 # 5 minutes
+  verifyEmail:
+    expireTime: 86400 # 24 hours
+  
+smtp: 
+  user: user
+  password: password
+  host: smtp.sendgrid.net
+  port: 465
+  secure: false
+  from: 'Beyond Blood'
+
+awsConfig:
+  isLocal: true
+  accessKeyId: accessKeyId
+  secretAccessKey: secretAccessKey
+  region: region
+
+database:
+  host: localhost
+  port: 3306
+  username: db_user_name
+  password: db_password@123
+  database: beyond-blood
+  log:
+    - query
+    - log
+  migrationOnStartup: false
+  synchronizationStartup: false
+  type: mysql
+  timezone: 0
+
+redis:
+  standalone:
+    host: localhost
+    port: 6379
+  cluster:
+    host: ''
+    port: ''

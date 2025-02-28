@@ -1,0 +1,15 @@
+version: '3.7'
+services:
+  api-beyond-blood: 
+    container_name: api-beyond-blood
+    ports:
+      - '${SERVER_PORT}:${SERVER_PORT}'   
+    build:
+      context: .
+    restart: unless-stopped
+    user: node
+    volumes:
+      - ./docker-logs:/usr/src/app/logs
+    env_file:
+      - .env
+  

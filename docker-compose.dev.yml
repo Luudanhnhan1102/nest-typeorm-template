@@ -1,0 +1,53 @@
+version: '3.7'
+services:
+  api-beyond-blood: 
+    container_name: api-beyond-blood
+    ports:
+      - '${SERVER_EXPOSED_PORT}:${SERVER_PORT}'   
+    build:
+      context: .
+    restart: unless-stopped
+    user: node
+    volumes:
+      - ./docker-logs:/usr/src/app/logs
+    env_file:
+      - .env
+    environment:
+      - REDIS_STANDALONE_HOST=redis
+      - REDIS_STANDALONE_PORT=${REDIS_STANDALONE_PORT}
+      - DATABASE_HOST=mysql
+      - DATABASE_PORT=${DATABASE_PORT}     
+      - DATABASE_MIGRATION_ON_START_UP=true
+    depends_on:
+      - redis
+      - mysql
+    networks:
+      - beyond-blood      
+
+  redis:
+    image: 'redis:alpine'
+    container_name: redis
+    ports:
+      - '${REDIS_EXPOSED_PORT}:${REDIS_STANDALONE_PORT}'
+    networks:
+      - beyond-blood
+
+  mysql:
+    image: 'mysql:8.0'
+    container_name: mysql
+    restart: unless-stopped    
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
+      MYSQL_DATABASE: ${DATABASE_DB_NAME}
+    ports:
+      - ${DATABASE_EXPOSED_PORT}:${DATABASE_PORT}    
+    volumes:
+      - mysql-data:/var/lib/mysql:rw
+    networks:
+      - beyond-blood
+
+networks:
+  beyond-blood:
+
+volumes:
+  mysql-data:  

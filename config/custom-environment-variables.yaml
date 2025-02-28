@@ -1,0 +1,86 @@
+service:
+  name: npm_package_name
+  brand: SERVICE_BRAND
+  clientAuthUrl: SERVICE_CLIENT_AUTH_URL
+  description: npm_package_description
+  apiVersion: npm_package_version
+  appVersion: npm_package_version
+
+server:
+  host: SERVER_HOST
+  port: SERVER_PORT
+  hostname: SERVER_HOSTNAME
+  swaggerSchema: SWAGGER_SCHEMA
+  swaggerUsername: SWAGGER_USERNAME
+  swaggerPassword: SWAGGER_PASSWORD
+  timezone: SERVER_TIMEZONE
+  cors:
+    allowedHeaders: SERVER_CORS_ALLOWED_HEADERS
+    exposedHeaders: SERVER_CORS_EXPOSED_HEADERS
+    methods: SERVER_CORS_METHODS
+    credentials: SERVER_CORS_CREDENTIALS
+    origin: SERVER_CORS_ORIGIN  
+  
+logger:
+  enabled:
+    __name: LOGGER_ENABLED
+    __format: json
+  redact:
+    enabled: 
+      __name: LOGGER_REDACT_ENABLED
+      __format: json 
+    paths: LOGGER_REDACT_PATH  
+  level: LOGGER_LEVEL
+  groupName: LOGGER_GROUP_NAME
+  logStreamName: LOGGER_STREAM_NAME
+  clwEnabled: LOGGER_CLW_ENABLED
+  fileEnabled: LOGGER_FILE_ENABLED
+  consoleEnabled: LOGGER_CONSOLE_ENABLED
+  folderLog: LOGGER_FOLDER_LOG
+
+auth: 
+  salt: AUTH_SALT
+  jwt:
+    secretKey: AUTH_JWT_SECRET_KEY
+    expireTime: AUTH_JWT_EXPIRE_TIME
+  refreshToken:
+    secretKey: AUTH_REFRESH_TOKEN_SECRET_KEY
+    expireTime: AUTH_REFRESH_TOKEN_EXPIRE_TIME
+  forgotPasswordToken:
+    expireTime: AUTH_TOKEN_EXPIRE_TIME    
+  verifyEmail:
+    expireTime: AUTH_TOKEN_VERIFY_EMAIL_EXPIRE_TIME
+
+awsConfig:
+  isLocal: AWS_IS_LOCAL
+  accessKeyId: ACCESS_KEY_ID
+  secretAccessKey: SECRET_ACCESS_KEY
+  region: AWS_REGION
+  generationExpiresTime: AWS_GENERATION_EXPIRE_TIME
+
+smtp: 
+  user: SMTP_USER
+  password: SMTP_PASSWORD
+  host: SMTP_HOST
+  port: SMTP_PORT
+  secure: SMTP_SECURE
+  from: SMTP_FROM
+
+database:
+  host: DATABASE_HOST
+  port: DATABASE_PORT
+  username: DATABASE_USER_NAME
+  password: DATABASE_PASSWORD
+  database: DATABASE_DB_NAME
+  migrationOnStartup: DATABASE_MIGRATION_ON_START_UP
+  synchronizationStartup: DATABASE_SYNCHRONIZATION_START_UP
+  type: DATABASE_TYPE
+  log: DATABASE_LOG
+
+redis:
+  standalone:
+    host: REDIS_STANDALONE_HOST
+    port: REDIS_STANDALONE_PORT
+  cluster:
+    host: REDIS_CLUSTER_HOST
+    port: REDIS_CLUSTER_PORT

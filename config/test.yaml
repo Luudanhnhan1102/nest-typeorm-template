@@ -1,0 +1,37 @@
+service:
+  name: api-nest-typeorm
+  baseUrl: ''
+  docsBaseUrl: /docs/nest-typeorm
+  apiVersion: 3.5.0
+  appVersion: 1.14.0
+
+server:
+  port: 3027
+  host: localhost
+  hostname:
+  cors:
+    allowedHeaders: "authorization,content-type"
+    exposedHeaders: "authorization,x-page,x-per-page,x-pages-count,x-total-count,x-next-page,x-response-time,x-request-id"
+
+redis:
+  standalone:
+    host: localhost
+    port: 1111
+  cluster:
+    host: ''
+    port: ''
+  generateQueue: 'generate-queue'
+
+database:
+  host: localhost
+  port: 3333
+  username: db_user_name
+  password: db_password@123
+  database: beyond-blood
+  log:
+    - query
+    - log
+  migrationOnStartup: false
+  synchronizationStartup: false
+  type: mysql
+  timezone: 0
