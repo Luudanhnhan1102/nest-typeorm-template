@@ -1,71 +1,126 @@
+/**
+ * CSV Parser - Reads and transforms CSV data into structured objects
+ */
 const fs = require('fs');
 const readline = require('readline');
 
-function formatLine(line, delimiter) {
+/**
+ * Split CSV line into array of values and clean them
+ * @param {string} line - The CSV line to split
+ * @param {string} delimiter - The delimiter used in the CSV
+ * @returns {string[]} Array of cleaned values
+ */
+function splitCsvLine(line, delimiter) {
+  if (!line) return [];
+
   return line
-    ?.trim()
-    ?.split(delimiter)
-    ?.map((header) => header.replaceAll('"', ''));
+    .trim()
+    .split(delimiter)
+    .map((item) => item.replaceAll('"', ''));
 }
 
-function castNumber(value) {
-  let castedValue = Number(value);
-  if (isNaN(castedValue)) {
-    return value;
-  }
-  return castedValue;
+/**
+ * Convert string to number when possible, otherwise keep as string
+ * @param {string} value - The value to convert
+ * @returns {number|string} Converted value
+ */
+function convertToNumber(value) {
+  if (value === undefined || value === null || value === '') return value;
+
+  const num = Number(value);
+  return isNaN(num) ? value : num;
 }
 
-function flattenToNested(flattenObject) {
-  // console.log(sample);
-  const allFlattenKeys = Object.keys(flattenObject);
-  const nestedObject = {};
-  for (const flattenKeys of allFlattenKeys) {
-    const properties = flattenKeys.split('.');
-    let currentHandlingObject = nestedObject;
-    for (const [index, property] of properties.entries()) {
-      if (index === properties.length - 1) {
-        currentHandlingObject[property] = flattenObject[flattenKeys];
-        continue;
+/**
+ * Transform flat objects with dot notation (e.g., 'a.b.c') into nested objects
+ * @param {Object} flatObject - Object with dot notation keys
+ * @returns {Object} Nested object structure
+ */
+function convertDotNotationToNested(flatObject) {
+  if (!flatObject || typeof flatObject !== 'object') return {};
+
+  const nestedResult = {};
+
+  Object.entries(flatObject).forEach(([dotPath, value]) => {
+    if (!dotPath) return;
+
+    const propertyPath = dotPath.split('.');
+    let currentLevel = nestedResult;
+
+    propertyPath.forEach((property, index, allProperties) => {
+      if (!property) return;
+
+      const isLastProperty = index === allProperties.length - 1;
+
+      if (isLastProperty) {
+        currentLevel[property] = value;
+      } else {
+        currentLevel[property] = currentLevel[property] || {};
+        currentLevel = currentLevel[property];
       }
-      if (!currentHandlingObject[property]) {
-        currentHandlingObject[property] = {};
-      }
-      currentHandlingObject = currentHandlingObject[property];
-    }
-  }
-  // console.log(nestedObject);
-  return nestedObject;
-}
-
-async function readCsv(path) {
-  const delimiter = ',';
-  const readableStream = fs.createReadStream(path);
-  const lineReader = readline.createInterface({
-    input: readableStream,
+    });
   });
 
-  let count = 1;
-  let headers = null;
-  const airlines = [];
+  return nestedResult;
+}
+
+/**
+ * Read and parse CSV file into structured objects
+ * @param {string} filePath - Path to the CSV file
+ * @returns {Promise<Array>} Array of parsed records
+ */
+async function processFile(filePath) {
+  const delimiter = ',';
+
+  const fileStream = fs.createReadStream(filePath);
+  const lineReader = readline.createInterface({ input: fileStream });
+
+  const parsedRecords = [];
+  let columnHeaders = null;
+  let lineCount = 0;
+
   for await (const line of lineReader) {
-    if (!headers) {
-      headers = formatLine(line, delimiter);
-      continue;
-    }
-    if (headers && count !== 0) {
-      const rawLine = formatLine(line, `","`);
-      const row = {};
-      for (const [index, header] of headers.entries()) {
-        const formatedValue = castNumber(rawLine[index]);
-        row[header] = formatedValue;
+    lineCount++;
+
+    try {
+      // First line contains headers
+      if (!columnHeaders) {
+        columnHeaders = splitCsvLine(line, delimiter);
+        if (!columnHeaders.length) {
+          throw new Error(`No valid headers found in CSV file`);
+        }
+        continue;
       }
-      airlines.push(flattenToNested(row));
+
+      // Parse data line
+      const rowValues = splitCsvLine(line, `","`);
+
+      // Skip invalid lines
+      if (!rowValues || rowValues.length !== columnHeaders.length) {
+        continue;
+      }
+
+      // Create object from row data
+      const flatRowData = {};
+      columnHeaders.forEach((header, i) => {
+        flatRowData[header] = convertToNumber(rowValues[i]);
+      });
+
+      // Transform flat object to nested structure and add to results
+      parsedRecords.push(convertDotNotationToNested(flatRowData));
+    } catch (error) {
+      console.error(`Error processing line ${lineCount}: ${error.message}`);
     }
   }
-  console.log(JSON.stringify(airlines.slice(0, 1), null, 2));
+
+  return parsedRecords;
 }
 
 (async () => {
-  await readCsv('./src/airlines.csv');
+  try {
+    const airlines = await processFile('./src/airlines.csv');
+    console.log(JSON.stringify(airlines.slice(0, 1), null, 2));
+  } catch (error) {
+    console.error('Error processing CSV file:', error.message);
+  }
 })();
