@@ -1,29 +1,20 @@
-/**
- * CSV Parser - Reads and transforms CSV data into structured objects
- */
 const fs = require('fs');
 const readline = require('readline');
 
-/**
- * Split CSV line into array of values and clean them
- * @param {string} line - The CSV line to split
- * @param {string} delimiter - The delimiter used in the CSV
- * @returns {string[]} Array of cleaned values
- */
-function splitCsvLine(line, delimiter) {
+function extractRowValues(line, delimiter) {
   if (!line) return [];
 
   return line
     .trim()
     .split(delimiter)
     .map((item) => item.replaceAll('"', ''));
+
+  // row này để xử lý cho header
+  // Raw: "Alice","30","New York"
+  // -> after split: ['"Alice', '30', 'New York"']
+  // -> After .replaceAll('"', ''): ['Alice', '30', 'New York']
 }
 
-/**
- * Convert string to number when possible, otherwise keep as string
- * @param {string} value - The value to convert
- * @returns {number|string} Converted value
- */
 function convertToNumber(value) {
   if (value === undefined || value === null || value === '') return value;
 
@@ -31,11 +22,6 @@ function convertToNumber(value) {
   return isNaN(num) ? value : num;
 }
 
-/**
- * Transform flat objects with dot notation (e.g., 'a.b.c') into nested objects
- * @param {Object} flatObject - Object with dot notation keys
- * @returns {Object} Nested object structure
- */
 function convertDotNotationToNested(flatObject) {
   if (!flatObject || typeof flatObject !== 'object') return {};
 
@@ -64,28 +50,30 @@ function convertDotNotationToNested(flatObject) {
   return nestedResult;
 }
 
-/**
- * Read and parse CSV file into structured objects
- * @param {string} filePath - Path to the CSV file
- * @returns {Promise<Array>} Array of parsed records
- */
 async function processFile(filePath) {
-  const delimiter = ',';
-
   const fileStream = fs.createReadStream(filePath);
   const lineReader = readline.createInterface({ input: fileStream });
+
+  const defaultDelimiter = `","`;
+  //   name,age,city
+  // "Alice","30","New York"
+  // "Bob","28","Los Angeles"
 
   const parsedRecords = [];
   let columnHeaders = null;
   let lineCount = 0;
 
+  // dùng async await vì:
+  // When we use the method createInterface, it creates asynchronous iterator.
+  // Each line is read from the file stream as the data arrives, not all at once.
+  // Therefore, using await here ensures the next value available asynchronously.
   for await (const line of lineReader) {
     lineCount++;
 
     try {
       // First line contains headers
       if (!columnHeaders) {
-        columnHeaders = splitCsvLine(line, delimiter);
+        columnHeaders = extractRowValues(line, defaultDelimiter);
         if (!columnHeaders.length) {
           throw new Error(`No valid headers found in CSV file`);
         }
@@ -93,7 +81,7 @@ async function processFile(filePath) {
       }
 
       // Parse data line
-      const rowValues = splitCsvLine(line, `","`);
+      const rowValues = extractRowValues(line, defaultDelimiter); // thay defaultDelimiter = `","`
 
       // Skip invalid lines
       if (!rowValues || rowValues.length !== columnHeaders.length) {
@@ -118,8 +106,8 @@ async function processFile(filePath) {
 
 (async () => {
   try {
-    const airlines = await processFile('./src/airlines.csv');
-    console.log(JSON.stringify(airlines.slice(0, 1), null, 2));
+    const results = await processFile('./src/airlines.csv');
+    console.log(JSON.stringify(results.slice(0, 1), null, 2));
   } catch (error) {
     console.error('Error processing CSV file:', error.message);
   }
